@@ -1,0 +1,37 @@
+#!/usr/bin/env ansible-playbook
+##
+## Playbook for resetting lab routers to a clean state
+##
+## you must invoke this playbook from the command line using --extra-vars, like so:
+##
+## ansible-playbook save-configs.yml --extra-vars "suffix=mysuffix.cfg"
+---
+- import_playbook: ssh-key-mgmt.yml
+
+- name: Revert IOS-XE devices to specified config 
+  hosts: ios-xe
+  tasks:
+  - name: Replace startup-config with clean config from TFTP
+    ios_command:
+      commands: "copy tftp://10.255.255.254/{{inventory_hostname}}.{{suffix}} startup-config \n"
+      authorize: yes
+      provider: "{{ xecli }}"
+
+  - name: Reload the device
+    ios_command:
+      commands: "reload in 1\n"
+      authorize: yes
+      provider: "{{ xecli }}"
+
+- name: Revert IOS-XR devices to specified config 
+  hosts: ios-xr
+  tasks:
+  - name: Install clean config via NAPALM driver
+    napalm_install_config:
+      provider: "{{ xrcli }}"
+      hostname: "{{ inventory_hostname }}"
+      dev_os: "iosxr"
+      config_file: "/var/lib/tftpboot/{{inventory_hostname}}.{{suffix}}"
+      commit_changes: True
+      replace_config: True
+

@@ -1,0 +1,37 @@
+---
+- name: Get SSH keys
+# Get SSH keys play taken from https://github.com/ipspace/NetOpsWorkshop/blob/master/tools/ssh-keys/get-keys.yml
+  hosts: allrouters
+  gather_facts: no
+  connection: local
+  vars:
+    - known_hosts: "~/.ssh/known_hosts"
+  tasks:
+    - name: scan and register
+      command: "ssh-keyscan -p {{ansible_port|default(22)}} {{ansible_host|default(inventory_hostname)}}"
+      register: "host_keys"
+      changed_when: false
+
+    - assert:
+        that: host_keys.stdout
+        msg:  "We did not get SSH key for {{inventory_hostname}}"
+
+    - file: path={{known_hosts}} state=touch
+      run_once: true
+      changed_when: false
+
+    - blockinfile:
+        dest: "{{known_hosts}}"
+        marker: "# {mark} This part managed by Ansible"
+        block: |
+          {% for h in groups['all'] if hostvars[h].host_keys is defined %}
+          {%  if hostvars[h].ansible_port is defined %}
+          {%   for key in hostvars[h].host_keys.stdout_lines %}
+          [{{ key.partition(" ")[0] }}]:{{ hostvars[h].ansible_port }} {{ key.partition(" ")[2] }}
+          {%   endfor %}
+          {%  else %}
+          {{ hostvars[h].host_keys.stdout }}
+          {%  endif %}
+          {% endfor %}
+      run_once: true
+      delegate_to: localhost

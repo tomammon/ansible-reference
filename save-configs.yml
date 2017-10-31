@@ -1,0 +1,31 @@
+#!/usr/bin/env ansible-playbook
+##
+## Playbook for saving configurations locally and pushing to tftp
+##
+## you must invoke this playbook from the command line using --extra-vars, like so:
+##
+## ansible-playbook save-configs.yml --extra-vars "suffix=mysuffix.cfg"
+---
+- import_playbook: ssh-key-mgmt.yml
+
+- name: Save configurations on IOS-XE devices
+  hosts: ios-xe
+  tasks:
+  - name: save to startup-config
+    ios_config:
+      save_when: always
+      authorize: yes
+      provider: "{{ xecli }}"
+  - name: copy to tftp clean configs
+    ios_command:
+      commands: "copy running-config tftp://10.255.255.254/{{inventory_hostname}}.{{suffix}} \n\n"
+      authorize: yes
+      provider: "{{ xecli }}"
+
+- name: Save configurations on IOS-XR devices
+  hosts: ios-xr
+  tasks:
+  - name: copy to tftp clean configs
+    iosxr_command:
+      commands: "copy running-config tftp://10.255.255.254/{{inventory_hostname}}.{{suffix}} \n\n"
+      provider: "{{ xrcli }}"

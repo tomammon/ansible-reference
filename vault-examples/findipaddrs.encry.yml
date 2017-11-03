@@ -1,0 +1,76 @@
+#!/usr/bin/env ansible-playbook
+#
+# test playbook
+#
+---
+- import_playbook: ../ssh-key-mgmt.yml
+
+- name: Create temp directory
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: delete directory if present
+    file:
+      path: /tmp/reportdata
+      state: absent
+  - name: create directory
+    file:
+      path: /tmp/reportdata
+      state: directory
+
+- name: Capture datetimestamp
+  hosts: localhost
+  tasks:
+  - set_fact: datetimestamp="{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+
+- name: Prepare JSON report header and footer files
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: create header file
+    file:
+      path: "/tmp/reportdata/aa-iosfacts.{{ datetimestamp }}.header.json"
+      state: touch
+  - lineinfile:
+      dest: "/tmp/reportdata/aa-iosfacts.{{ datetimestamp }}.header.json"
+      line: "{"
+  - lineinfile:
+      dest: "/tmp/reportdata/aa-iosfacts.{{ datetimestamp }}.header.json"
+      line: '"ipaddrs": ' 
+  - name: create footer file
+    file:
+      path: "/tmp/reportdata/zz-iosfacts.{{ datetimestamp }}.footer.json"
+      state: touch
+  - lineinfile:
+      dest: "/tmp/reportdata/zz-iosfacts.{{ datetimestamp }}.footer.json"
+      line: "}"
+
+- name: get facts from ios-xe
+  hosts: pe
+  vars_files:
+   - "/etc/ansible/custom_vars/info.yml"
+  tasks:
+  - ios_facts: 
+      provider: "{{ prodcli }}"
+  - debug: var=ansible_net_all_ipv4_addresses
+  - copy:
+      content: "{{ ansible_net_all_ipv4_addresses }}"
+      dest: "/tmp/reportdata/{{ inventory_hostname }}.txt"
+
+- name: assemble output files into a single (sort of) json-formatted report
+  hosts: localhost
+  connection: local
+  tasks:
+  - assemble:
+      src: /tmp/reportdata
+      dest: /tmp/reportdata/iosfacts_report.json
+
+- name: clean up temp files
+  hosts: localhost
+  tasks:
+  - copy:
+      src: /tmp/reportdata/iosfacts_report.json
+      dest: "~/iosfacts.{{ datetimestamp }}.json"
+  - file:
+      path: /tmp/reportdata
+      state: absent

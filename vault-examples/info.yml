@@ -1,0 +1,12 @@
+---
+#
+# create an encrypted file with "ansible-vault create myfile.yml"
+# encrypt an existing file with "ansible-vault encrypt myexistingfile.yml"
+# view an encrypted file with "ansible-vault view myfile.yml"
+# edit an encrypted file with "ansible-vault edit myfile.yml"
+# change passwod on an encrypted file with "ansible-vault rekey myfile.yml"
+#
+prodcli:
+  username: myusername
+  password: mypassword
+  auth_pass: myenable

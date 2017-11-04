@@ -1,7 +1,5 @@
 #!/usr/bin/env ansible-playbook
 #
-# test playbook
-#
 ---
 - import_playbook: ../ssh-key-mgmt.yml
 

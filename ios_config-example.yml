@@ -1,0 +1,38 @@
+#!/usr/bin/env ansible-playbook
+#
+# provider: uses variable named "ioscli" which is taken from a file named
+# l1-ios.yml located in /etc/ansible/group_vars.
+- name: configure new aaa to open up console
+  hosts: l1-ios
+  tasks:
+      - name: global aaa and other config
+        ios_config:
+            provider: "{{ ioscli }}"
+            authorize: yes
+            lines:
+                - aaa authentication login default none
+                - aaa authentication login VTY enable
+                - logging console debug
+
+      - name: console config
+        ios_config:
+            provider: "{{ ioscli }}"
+            authorize: yes
+            parents: line con 0
+            lines:
+                - privilege level 15
+                - logg sync
+                - exec-ti 0
+
+      - name: vty config
+        ios_config:
+            save_when: always #do copy run startup after running the config commands, even if no config has changed
+            provider: "{{ ioscli }}"
+            authorize: yes
+            parents: line vty 0 4
+            lines:
+                - privilege level 15
+                - login authentication VTY
+                - logg sync
+                - exec-ti 0
+                - transport preferred none

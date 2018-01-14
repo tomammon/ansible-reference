@@ -1,0 +1,6 @@
+---
+# secrets for ios devices
+ioscli:
+  username: lab
+  password: lab
+  auth_pass: lab

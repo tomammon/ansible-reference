@@ -1,0 +1,61 @@
+#!/usr/bin/env ansible-playbook
+##
+## Playbook for saving configurations locally and pushing to tftp
+##
+## you must invoke this playbook from the command line using --extra-vars and --tags, like so:
+##
+## ansible-playbook save-configs.yml -e "path=L1/labinfra suffix=mysuffix.cfg" --tags "ios"
+##
+## tags are one of: l1-ios, l1-asa, labinfra
+##
+---
+- name: Save configurations on IOSv devices
+  hosts: l1-ios
+  tags:
+      - ios
+  tasks:
+  - name: copy IOSv router configurations to TFTP
+    ios_command:
+      commands: "copy running-config tftp://2001:470:40f0:100::FFFF/{{path}}/{{inventory_hostname}}.{{suffix}}"
+      authorize: yes
+      provider: "{{ ioscli }}"
+
+  - name: save IOSv router configs locally
+    ios_command:
+      commands: "copy running-config startup-config"
+      authorize: yes
+      provider: "{{ ioscli }}"
+
+- name: Save configurations on ASAv devices
+  hosts: l1-asa
+  tags:
+      - asa
+  tasks:
+  - name: copy ASAv firewall configs to TFTP
+    asa_command:
+      commands: "copy running-config tftp://2001:470:40f0:100::FFFF/{{path}}/{{inventory_hostname}}.{{suffix}}"
+      authorize: yes
+      provider: "{{ ioscli }}"
+
+  - name: save ASAv configs locally
+    asa_command:
+      commands: "copy running-config startup-config"
+      authorize: yes
+      provider: "{{ ioscli }}"
+
+- name: Save configurations on lab infrastructure devices
+  hosts: lab-infra
+  tags:
+      - labinfra
+  tasks:
+  - name: copy lab infrastructure routers running config to TFTP
+    ios_command:
+      commands: "copy running-config tftp://2001:470:40f0:100::FFFF/{{path}}/{{inventory_hostname}}.{{suffix}}"
+      authorize: yes
+      provider: "{{ ioscli }}"
+
+  - name: save lab infrastructure config locally
+    ios_command:
+      commands: "copy running-config startup-config"
+      authorize: yes
+      provider: "{{ ioscli }}"

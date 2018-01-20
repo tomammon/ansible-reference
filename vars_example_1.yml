@@ -1,0 +1,43 @@
+#!/usr/bin/env ansible-playbook
+#
+# provider: uses variable named "ioscli" which is taken from a file named
+# l1-ios.yml located in /etc/ansible/group_vars.
+#
+# the {{dev_index}} variable is present in /etc/ansible/hosts, like this:
+# [l1-ios]
+# bb1.l1.tomsbox.lab dev_index=1
+---
+- name: configure loopbacks on routers
+  hosts: l1-ios
+  tasks:
+      - name: configure loopback0
+        ios_config:
+            provider: "{{ ioscli }}"
+            authorize: yes
+            parents: interface loopback0
+            lines:
+                - ip address 192.168.100.{{dev_index}} 255.255.255.255
+
+      - name: configure loopback1
+        ios_config:
+            provider: "{{ ioscli }}"
+            authorize: yes
+            parents: interface loopback1
+            lines:
+                - ip address 192.168.200.{{dev_index}} 255.255.255.255
+
+      - name: configure loopback2
+        ios_config:
+            provider: "{{ ioscli }}"
+            authorize: yes
+            parents: interface loopback2
+            lines:
+                - ip address 172.16.100.{{dev_index}} 255.255.255.255
+
+      - name: configure loopback10
+        ios_config:
+            provider: "{{ ioscli }}"
+            authorize: yes
+            parents: interface loopback10
+            lines:
+                - ip address 172.17.{{dev_index}}0.1 255.255.255.0

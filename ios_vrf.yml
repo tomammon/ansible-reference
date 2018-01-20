@@ -1,0 +1,36 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Add VRFs
+  hosts: l1-backbone
+  tasks:
+      - name: Remove dirty Services VRF
+        ios_vrf:
+            provider: "{{ ioscli }}"
+            name: Services
+            state: absent
+
+      - name: Add new Services VRF
+        ios_vrf:
+            provider: "{{ ioscli }}"
+            name: Services
+            rd: "100:10{{ dev_index }}"
+
+      # route targets can't yet be added as part of ios_vrf, but this is coming in Ansible 2.5
+      # so just use the parents option to descend into the correct submode
+      - name: Re-add RT's to Services
+        ios_config:
+            provider: "{{ ioscli }}"
+            parents:
+                - vrf definition Services
+                - address-family ipv4
+            lines:
+                - route-target both 100:100
+
+      - name: Add RT's to XCon
+        ios_config:
+            provider: "{{ ioscli }}"
+            parents:
+                - vrf definition XCon
+                - address-family ipv4
+            lines:
+                - route-target both 105:105

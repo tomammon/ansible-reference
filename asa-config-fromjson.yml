@@ -1,0 +1,26 @@
+#!/usr/bin/env ansible-playbook
+#
+# provider comes from a file called /etc/ansible/group_vars/l1-asa.yml with provider dict
+#
+# This playbook demonstrates looping over a list of values using with_items, and using an
+# external file written in JSON syntax, as a data source.
+# The contents of /etc/ansible/extdata/groups.json are:
+#
+# ["10.10.10.0","20.20.20.0","30.30.30.0"]
+#
+# For each item in the above list, the command "network-object <ip address from the JSON file>" will be configured.
+#
+---
+- name: configure object group modifications using with_items with external data
+  hosts: l1-asa
+  vars:
+      listofipaddr: "{{ lookup('file', '/etc/ansible/extdata/groups.json') | from_json }}"
+  tasks:
+      - name: modify object group
+        asa_config:
+            provider: "{{ asacli }}"
+            authorize: yes
+            parents: object-group network TESTGROUP
+            lines:
+                - network-object {{ item }} 255.255.255.0
+        with_items: "{{ listofipaddr }}"

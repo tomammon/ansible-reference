@@ -1,0 +1,22 @@
+#!/usr/bin/env ansible-playbook
+#
+# provider comes from a file called /etc/ansible/group_vars/l1-asa.yml with provider dict
+#
+# This playbook demonstrates looping over a list of values using with_items.
+# For each item in the list, the command "network-object <ip address and mask>" will be configured
+#
+---
+- name: configure object group modifications using with_items
+  hosts: l1-asa
+  tasks:
+      - name: modify object group
+        asa_config:
+            provider: "{{ asacli }}"
+            authorize: yes
+            parents: object-group network TESTGROUP
+            lines:
+                - network-object {{ item }}
+        with_items:
+            - 3.3.3.0 255.255.255.0
+            - 4.4.4.0 255.255.255.0
+            - 5.5.5.0 255.255.255.0

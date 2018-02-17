@@ -1,0 +1,15 @@
+#!/usr/bin/env ansible-playbook
+#
+# provider comes from a file called /etc/ansible/group_vars/l1-asa.yml with provider dict
+#
+---
+- name: configure object group modifications
+  hosts: l1-asa
+  tasks:
+      - name: modify object group
+        asa_config:
+            provider: "{{ asacli }}"
+            authorize: yes
+            parents: object-group network TESTGROUP # descend into object-group config mode before adding lines: below
+            lines:
+                - network-object 2.2.2.0 255.255.255.0

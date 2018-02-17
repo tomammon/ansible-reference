@@ -1,0 +1,35 @@
+#!/usr/bin/env ansible-playbook
+#
+# This playbook demonstrates how to log in to multiple remote jumphosts and run a traceroute
+# to multiple destinations (10.1.1.1 and 10.2.2.2 in this example), and then send the output to a slack channel using the slack module.
+# This also demonstrates how to take output from a command and store it into a var using "register",
+# as well as how to use the debug module to show you what data is actually being stored in the "traceroute" var.
+# The debug module is NOT required for the slack output to work.
+#
+# Additional configuration in slack is required to make this work - you must add an Integration in the web portal to get the
+# auth token.
+#
+# This playbook also demonstrates the use of inline jinja filters with the to_nice_json filter.
+#
+---
+- name: run traceroute
+  hosts: jumpbox-servers
+  tasks:
+  - name: traceroute
+    command: "sudo traceroute {{ item }} -T -p 22"
+    register: traceoutput
+    with_items:
+      - 10.1.1.1
+      - 10.2.2.2
+
+  - name: debug registered variables
+    debug: var=traceoutput
+
+  - name: send output to slack
+    local_action:
+      module: slack
+      token: <removed>
+      channel: "#<channel>"
+      msg: "traceroute from {{ inventory_hostname }} results ```{{ item['stdout_lines'] | to_nice_json }}```"
+    with_items:
+        - "{{ traceoutput['results'] }}"

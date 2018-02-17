@@ -15,6 +15,8 @@ Ansible snippets that I have found useful in my day to day work
 
 **l1-ios.yml** example of a provider dict
 
+**multi-traceroute.yml:** run a traceroute from multiple remote linux servers to multiple destinations and send the output to a slack channel
+
 **revert-lab.yml:** easily reset IOS-XR and IOS-XE lab routers to a clean configuration, based on a file name on a TFTP server
 
 **save-configs-withtags.yml:** same as save-configs.yml below, but using a different tag for each task to demonstrate tag usage

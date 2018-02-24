@@ -15,7 +15,11 @@ Ansible snippets that I have found useful in my day to day work
 
 **l1-ios.yml** example of a provider dict
 
+**mple-te-base.yml** build global MPLS-TE configurations on IOS-XE and IOS-XR using save_when and parents options
+
 **multi-traceroute.yml:** run a traceroute from multiple remote linux servers to multiple destinations and send the output to a slack channel
+
+**password-change.yml:** using ansible-vault to encrypt secrets, update passwords with ios_config and iosxr_config modules
 
 **revert-lab.yml:** easily reset IOS-XR and IOS-XE lab routers to a clean configuration, based on a file name on a TFTP server
 

@@ -1,0 +1,52 @@
+#!/usr/bin/env ansible-playbook
+#
+# MPLS-TE base configuration playbook
+#
+---
+- import_playbook: ../ssh-key-mgmt.yml
+
+- name: Add base MPLS Traffic Engineering configuration (IOS-XE devices)
+  hosts: backbone-xe
+  tasks:
+  - name: Global TE config
+    ios_config:
+      lines:
+        - mpls traffic-eng tunnels
+      authorize: yes
+      provider: "{{ xecli }}"
+  - name: IS-IS TE config
+    ios_config:
+      lines:
+        - mpls traffic-eng level-2
+        - mpls traffic-eng router-id Loopback1
+      parents:
+        - router isis labtop
+      authorize: yes
+      provider: "{{ xecli }}"
+  - name: save configuration
+    ios_config:
+      save_when: always
+      authorize: yes
+      provider: "{{ xecli }}"
+
+- name: Add base MPLS Traffic Engineering configuration (IOS-XR devices)
+  hosts: ios-xr
+  tasks:
+  - name: Global TE config
+    iosxr_config:
+      lines:
+        - interface GigabitEthernet0/0/0/0
+        - interface GigabitEthernet0/0/0/1
+        - interface GigabitEthernet0/0/0/2
+      parents:
+        - mpls traffic-eng
+      provider: "{{ xrcli }}"
+  - name: IS-IS TE config
+    iosxr_config:
+      lines:
+        - mpls traffic-eng level-2-only
+        - mpls traffic-eng router-id Loopback1
+      parents:
+        - router isis labtop
+        - address-family ipv4 unicast
+      provider: "{{ xrcli }}"

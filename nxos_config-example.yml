@@ -1,0 +1,15 @@
+#!/usr/bin/env ansible-playbook
+- name: add fabricpath vlan to nexus switches
+  hosts: nxos
+  tasks:
+      - name: configure vlan
+        nxos_config:
+            # "username" argument has been deprecated, but it can be handy for ad-hoc tasks
+            username: admin
+            #provider: "{{ nxcli }}"
+            lines:
+                - name NXTEST
+                - mode fabricpath
+            parents:
+                - vlan 200
+            save_when: modified

@@ -9,6 +9,8 @@ Ansible snippets that I have found useful in my day to day work
 
 **findipaddrs.yml** use the ios_facts module to prepare a JSON report of all configured IP addresses on network devices. Includes file manipulation operations.
 
+**ios_command-with-templates.yml** use ios_command iosxr_command to gather show output and then dump to a file using a jinja template and the template filter. See showcommand.j2 below.
+
 **ios_config-example.yml** use the ios_config module to make config changes in global config as well as configuration submodes
 
 **ios_vrf.yml** compare the ios_config and ios_vrf modules, showing ios_vrf's limitations (as of Ansible 2.4. 2.5 is supposed to add things like route targets to ios_vrf)
@@ -26,6 +28,8 @@ Ansible snippets that I have found useful in my day to day work
 **save-configs-withtags.yml:** same as save-configs.yml below, but using a different tag for each task to demonstrate tag usage
 
 **save-configs.yml:** save configurations on IOS-XR and IOS-XE routers to a TFTP server
+
+**showcommand.j2:** Jinja temlate for use with ios_command-with-templates.yml, above.
 
 **ssh-key-mgmt.yml:** manage ssh keys, imported into other playbooks to keep things clean - taken from
 https://github.com/ipspace/NetOpsWorkshop/blob/master/tools/ssh-keys/get-keys.yml

@@ -1,0 +1,58 @@
+#!/usr/bin/env ansible-playbook
+---
+- import_playbook: ssh-key-mgmt.yml
+
+- name: gather state from IOS-XE devices
+  hosts: ios-xe
+  tasks:
+  - name: gather state
+    ios_command:
+      authorize: yes
+      provider: "{{ xecli }}"
+      commands:
+        - show running-config
+        - show ip interface brief
+        - show cdp neighbor
+        - show mpls traffic-eng tunnels bri
+        - show mpls traffic-eng tunnels
+        - show isis neighbor
+        - show isis database
+        - show isis database detail
+        - show ip bgp all summary
+        - show ip bgp
+        - show ip bgp vpnv4 all
+        - show vrf
+        - show ip route vrf *
+    register: deviceoutput
+
+  - name: render from template
+    template:
+      src: /etc/ansible/templates/showcommand.j2
+      dest: /etc/ansible/output/{{ inventory_hostname }}-currentstate.txt
+
+
+- name: gather state from IOS-XR devices
+  hosts: ios-xr
+  tasks:
+  - name: gather state
+    iosxr_command:
+      provider: "{{ xrcli }}"
+      commands:
+        - show running-config
+        - show ip interface brief
+        - show cdp neighbor
+        - show mpls traffic-eng tunnels bri
+        - show mpls traffic-eng tunnels
+        - show isis neighbor
+        - show isis database
+        - show isis database detail
+        - show bgp all all summary
+        - show bgp ipv4 unicast
+        - show bgp ipv4 labeled-unicast
+        - show vrf all
+    register: deviceoutput
+
+  - name: render from template
+    template:
+      src: /etc/ansible/templates/showcommand.j2
+      dest: /etc/ansible/output/{{ inventory_hostname }}-currentstate.txt

@@ -1,0 +1,92 @@
+---
+- name: Capture datestamp
+  hosts: localhost
+  tasks:
+    - set_fact: curdate="{{lookup('pipe','date +%Y%m%d%H%M')}}"
+
+- name: Back up c7600 configs
+  gather_facts: false
+  hosts: dut-7600
+  tasks:
+
+    - name: show running config and inventory data
+      ios_command:
+        commands:
+          - show running-config
+          - show module
+          - show inventory
+      register: deviceoutput
+
+    - name: save to local disk
+      template:
+        src: /etc/ansible/templates/showcommand.j2
+        dest: /home/netauto/repos/lab-config-backups/dut/{{ inventory_hostname }}.cfg
+
+- name: Back up ASR9K configs
+  gather_facts: false
+  hosts: dut-a9k
+  tasks:
+
+    - name: show running config and inventory data
+      ios_command:
+        commands:
+          - show running-config
+          - admin show platform
+          - admin show inventory
+      register: deviceoutput
+
+    - name: save to local disk
+      template:
+        src: /etc/ansible/templates/showcommand.j2
+        dest: /home/netauto/repos/lab-config-backups/dut/{{ inventory_hostname }}.cfg
+
+- name: Back up c3750 configs
+  gather_facts: false
+  hosts: dut-3750
+  tasks:
+
+    - name: show running config and inventory data
+      ios_command:
+        commands:
+          - show running-config
+          - show inventory
+      register: deviceoutput
+
+    - name: save to local disk
+      template:
+        src: /etc/ansible/templates/showcommand.j2
+        dest: /home/netauto/repos/lab-config-backups/dut/{{ inventory_hostname }}.cfg
+
+- name: Back up asr920 configs
+  gather_facts: false
+  hosts: dut-asr920
+  tasks:
+
+    - name: show running config and inventory data
+      ios_command:
+        commands:
+          - show running-config
+          - show inventory
+      register: deviceoutput
+
+    - name: save to local disk
+      template:
+        src: /etc/ansible/templates/showcommand.j2
+        dest: /home/netauto/repos/lab-config-backups/dut/{{ inventory_hostname }}.cfg
+
+
+- name: Add backups to git repo
+  gather_facts: false
+  hosts: localhost
+  tasks:
+
+    - name: add to staging index
+      command: chdir=/home/netauto/repos/lab-config-backups/dut git add *
+
+    - name: commit to repo
+      command: chdir=/home/netauto/repos/lab-config-backups/dut git commit -m 'auto config backup at {{ curdate }}'
+      ignore_errors: yes
+
+    - name: push to server
+      command: chdir=/home/netauto/repos/lab-config-backups/dut git push
+      ignore_errors: yes

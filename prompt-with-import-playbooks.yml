@@ -1,0 +1,26 @@
+---
+# vars gathered from prompt don't leave the play, so as a workaround use set_fact to make it global.
+- name: Play to prompt for input then send that input as a variable to an imported playbook
+  hosts: "switches-*"
+  gather_facts: no
+  connection: local
+  vars_prompt:
+    - name: "pass_fromprompt"
+      prompt: "Enter password"
+      private: yes
+
+  tasks:
+    - set_fact:
+        sessionpass: "{{ pass_fromprompt }}"
+    - debug:
+        msg: "password started life as {{ pass_fromprompt }}"
+    - debug:
+        msg: "password will be sent to the child playbook as {{ hostvars[inventory_hostname]['sessionpass'] }}"
+
+- import_playbook: myfirstplaybook.yml
+- import_playbook: mysecondplaybook.yml
+- import_playbook: mythirdplaybook.yml
+  vars:
+    pass: '{{ hostvars[inventory_hostname]["sessionpass"] }}'
+
+# inside mythirdplaybook.yml, reference {{pass}}.
